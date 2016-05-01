@@ -2,6 +2,17 @@
 from matrix import Matrix, get_unit_matrix, get_row_matrix, EchelonForm, IndexElementPair
 
 
+def coefficients_to_formula(coefficients, variable):
+    return "+".join(map(lambda x: "(" + str(x[1]) + "*" + variable + str(x[0]) + ")", enumerate(coefficients)))
+
+
+def get_formula(objective, c, A, b, variable):
+    result = objective + " " + coefficients_to_formula(c, variable) + "\n"
+    result += "\n".join(coefficients_to_formula(coefficients, variable) + " <= " + str(elem) for coefficients, elem in zip(A, b)) + "\n"
+    result += ", ".join(map(lambda x: variable + str(x), range(len(c)))) + " >= 0"
+    return result
+
+
 class LinearProgrammingResult(object):
     def __init__(self, objective_function_value, x_values, c):
         self.value = objective_function_value
@@ -14,7 +25,7 @@ class LinearProgrammingResult(object):
 
     def __repr__(self):
         result = ", ".join(map(lambda x: "x" + str(x[0]) + "=" + str(x[1]), enumerate(self.x_values)))
-        result += "\nmax " + "+".join(map(lambda x: "(" + str(x[1]) + "*x" + str(x[0]) + ")", enumerate(self.c))) + " = " + str(self.value)
+        result += "\nmax" + coefficients_to_formula(self.c) + " = " + str(self.value)
         result += "\nStatus: " + str(self.status)
         return result
 
@@ -27,6 +38,12 @@ class LinearProgramming(object):
         self.A = A
         self.b = b
         self.c = c
+
+    def __repr__(self):
+        return get_formula("max", self.c, self.A.elements, self.b, "x")
+
+    def dual(self):
+        return get_formula("min", self.b, self.A.transposed().elements, self.c, "y")
 
     def pick_first_positive(self, elements):
         for i, element in enumerate(elements):
@@ -110,10 +127,13 @@ class LinearProgramming(object):
 
 if __name__ == '__main__':
     A = Matrix([
-        [-1, 1],
-        [1, -2]
+        [1, 1, -1],
+        [-1, -1, 1]
     ])
-    b = [1, 2]
-    c = [2, 1]
+    b = [5, -5]
+    c = [-1, 2, -2]
     lp = LinearProgramming(c, A, b)
     result = lp.run()
+    print lp
+    print
+    print lp.dual()

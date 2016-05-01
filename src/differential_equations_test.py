@@ -1,0 +1,40 @@
+import differential_equations
+import unittest
+
+
+class MyTestCase(unittest.TestCase):
+    def test_euler_method(self):
+        expected_result = ([0, 0.5, 1.0, 1.5], [1, 1.5, 2.25, 3.375])
+        euler_method = differential_equations.EulerMethod(lambda x, y: y, 0, 1, 0.5, 3)
+        self.assertAlmostEqual(euler_method.run(), expected_result)
+        self.assertAlmostEqual(euler_method.simple_run(), expected_result)
+
+    def test_runge_kutta_fourth(self):
+        expected_result = ([0, 0.5, 1.0, 1.5], [1, 1.6484375, 2.71734619140625, 4.47937536239624])
+        runge_kutta = differential_equations.RungeKuttaFourth(lambda x, y: y, 0, 1, 0.5, 3)
+        self.assertAlmostEqual(runge_kutta.run(), expected_result)
+        self.assertAlmostEqual(runge_kutta.simple_run(), expected_result)
+
+    def test_runge_kutta_fourth38(self):
+        expected_result = ([0, 0.5, 1.0, 1.5], [1, 1.6475694444444444, 2.7144850742669755, 4.472302665762777])
+        runge_kutta = differential_equations.RungeKuttaFourth38(lambda x, y: y, 0, 1, 0.5, 3)
+        self.assertAlmostEqual(runge_kutta.run(), expected_result)
+
+    def test_midpoint(self):
+        expected_result = ([0, 0.5, 1.0, 1.5], [1, 1.625, 2.640625, 4.291015625])
+        midpoint = differential_equations.Midpoint(lambda x, y: y, 0, 1, 0.5, 3)
+        self.assertAlmostEqual(midpoint.run(), expected_result)
+
+    def test_heun(self):
+        expected_result = ([0, 0.5, 1.0, 1.5], [1, 1.625, 2.640625, 4.291015625])
+        heun = differential_equations.Heun(lambda x, y: y, 0, 1, 0.5, 3)
+        self.assertAlmostEqual(heun.run(), expected_result)
+
+    def test_ralston(self):
+        expected_result = ([0, 0.5, 1.0, 1.5], [1, 1.625, 2.640625, 4.291015625])
+        ralston = differential_equations.Ralston(lambda x, y: y, 0, 1, 0.5, 3)
+        self.assertAlmostEqual(ralston.run(), expected_result)
+
+
+if __name__ == '__main__':
+    unittest.main()

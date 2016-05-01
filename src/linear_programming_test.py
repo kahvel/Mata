@@ -51,6 +51,26 @@ class MyTestCase(unittest.TestCase):
         for i in range(len(b)):
             self.assertLessEqual(result.x_values[0]*A.elements[i][0]+result.x_values[1]*A.elements[i][1], b[i])
 
+    def test_repr(self):
+        primal = """max (-1*x0)+(2*x1)+(-2*x2)
+(1*x0)+(1*x1)+(-1*x2) <= 5
+(-1*x0)+(-1*x1)+(1*x2) <= -5
+x0, x1, x2 >= 0"""
+        dual = """min (5*y0)+(-5*y1)
+(1*y0)+(-1*y1) <= -1
+(1*y0)+(-1*y1) <= 2
+(-1*y0)+(1*y1) <= -2
+y0, y1 >= 0"""
+        A = matrix.Matrix([
+            [1, 1, -1],
+            [-1, -1, 1]
+        ])
+        b = [5, -5]
+        c = [-1, 2, -2]
+        lp = linear_programming.LinearProgramming(c, A, b)
+        self.assertEqual(str(lp), primal)
+        self.assertEqual(lp.dual(), dual)
+
 
 if __name__ == '__main__':
     unittest.main()

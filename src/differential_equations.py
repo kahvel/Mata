@@ -101,24 +101,25 @@ class Ralston(Midpoint):
         Midpoint.__init__(self, derivative, initial_x, initial_y, delta_x, steps, alpha=2.0/3)
 
 
-euler_method = EulerMethod(lambda x, y: y, 0, 1, 0.5, 3)
-print euler_method.run()
-print euler_method.simple_run()
+if __name__ == '__main__':
+    euler_method = EulerMethod(lambda x, y: y, 0, 1, 0.5, 3)
+    print euler_method.run()
+    print euler_method.simple_run()
 
-runge_kutta_fourth = RungeKuttaFourth(lambda x, y: y, 0, 1, 0.5, 3)
-print runge_kutta_fourth.run()
-print runge_kutta_fourth.simple_run()
+    runge_kutta_fourth = RungeKuttaFourth(lambda x, y: y, 0, 1, 0.5, 3)
+    print runge_kutta_fourth.run()
+    print runge_kutta_fourth.simple_run()
 
-runge_kutta_fourth_38 = RungeKuttaFourth38(lambda x, y: y, 0, 1, 0.5, 3)
-print runge_kutta_fourth_38.run()
+    runge_kutta_fourth_38 = RungeKuttaFourth38(lambda x, y: y, 0, 1, 0.5, 3)
+    print runge_kutta_fourth_38.run()
 
-midpoint = Midpoint(lambda x, y: y, 0, 1, 0.5, 3)
-print midpoint.run()
+    midpoint = Midpoint(lambda x, y: y, 0, 1, 0.5, 3)
+    print midpoint.run()
 
-heun = Heun(lambda x, y: y, 0, 1, 0.5, 3)
-print heun.run()
+    heun = Heun(lambda x, y: y, 0, 1, 0.5, 3)
+    print heun.run()
 
-ralston = Ralston(lambda x, y: y, 0, 1, 0.5, 3)
-print ralston.run()
+    ralston = Ralston(lambda x, y: y, 0, 1, 0.5, 3)
+    print ralston.run()
 
 
