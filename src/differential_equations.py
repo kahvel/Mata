@@ -15,8 +15,8 @@ class Solver(object):
         if stage == 1:
             return self.derivative(x, y)
         else:
-            delta_multiplier = sum(map(lambda a: a*self.k(stage-1, x, y), self.matrix[stage-1]))
-            return self.derivative(x*self.nodes[stage-1]*self.delta_x, y+self.delta_x*delta_multiplier)
+            delta_multiplier = sum(map(lambda a: a[1]*self.k(a[0]+1, x, y), enumerate(self.matrix[stage-1][:-1])))
+            return self.derivative(x+self.nodes[stage-1]*self.delta_x, y+self.delta_x*delta_multiplier)
 
     def run(self):
         y_values = [self.initial_y]
@@ -102,24 +102,43 @@ class Ralston(Midpoint):
 
 
 if __name__ == '__main__':
-    euler_method = EulerMethod(lambda x, y: y, 0, 1, 0.5, 3)
-    print euler_method.run()
-    print euler_method.simple_run()
+    from matplotlib import pyplot as plt
+    euler_method = EulerMethod(lambda x, y: 1+x**2+y**2, 1, 0, 0.1, 9)
+    euler_result = euler_method.run()
 
-    runge_kutta_fourth = RungeKuttaFourth(lambda x, y: y, 0, 1, 0.5, 3)
-    print runge_kutta_fourth.run()
-    print runge_kutta_fourth.simple_run()
+    runge_kutta_fourth = RungeKuttaFourth(lambda x, y: 1+x**2+y**2, 1, 0, 0.1, 9)
+    runge_kutta_result = runge_kutta_fourth.run()
 
-    runge_kutta_fourth_38 = RungeKuttaFourth38(lambda x, y: y, 0, 1, 0.5, 3)
-    print runge_kutta_fourth_38.run()
+    runge_kutta_fourth_38 = RungeKuttaFourth38(lambda x, y: 1+x**2+y**2, 1, 0, 0.1, 9)
+    runge_kutta_38_result =  runge_kutta_fourth_38.run()
 
-    midpoint = Midpoint(lambda x, y: y, 0, 1, 0.5, 3)
-    print midpoint.run()
+    midpoint = Midpoint(lambda x, y: 1+x**2+y**2, 1, 0, 0.1, 9)
+    midpoint_result = midpoint.run()
 
-    heun = Heun(lambda x, y: y, 0, 1, 0.5, 3)
-    print heun.run()
+    heun = Heun(lambda x, y: 1+x**2+y**2, 1, 0, 0.1, 9)
+    heun_result = heun.run()
 
-    ralston = Ralston(lambda x, y: y, 0, 1, 0.5, 3)
-    print ralston.run()
+    ralston = Ralston(lambda x, y: 1+x**2+y**2, 1, 0, 0.1, 9)
+    ralston_result = ralston.run()
+
+    n_digits = 3
+    print "x                  ", map(lambda x: round(x, 1), euler_result[0])
+    print "y"
+    print "Euler method       ", map(lambda x: round(x, n_digits), euler_result[1])
+    print "Runge-Kutta 4th    ", map(lambda x: round(x, n_digits), runge_kutta_result[1])
+    print "Runge-Kutta 4th 3/8", map(lambda x: round(x, n_digits), runge_kutta_38_result[1])
+    print "Midpoint           ", map(lambda x: round(x, n_digits), midpoint_result[1])
+    print "Heun               ", map(lambda x: round(x, n_digits), heun_result[1])
+    print "Ralston            ", map(lambda x: round(x, n_digits), ralston_result[1])
+
+    plt.plot(euler_result[0], euler_result[1], label="Euler")
+    plt.plot(runge_kutta_result[0], runge_kutta_result[1], label="Runge-Kutta 4th")
+    # plt.plot(runge_kutta_38_result[0], runge_kutta_38_result[1])
+    plt.plot(midpoint_result[0], midpoint_result[1], label="Midpoint")
+    plt.plot(heun_result[0], heun_result[1], label="Heun")
+    plt.plot(ralston_result[0], ralston_result[1], label="Ralston")
+    plt.legend(loc=2)
+    # plt.savefig("vordlus.png")
+    plt.show()
 
 

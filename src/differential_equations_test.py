@@ -35,6 +35,18 @@ class MyTestCase(unittest.TestCase):
         ralston = differential_equations.Ralston(lambda x, y: y, 0, 1, 0.5, 3)
         self.assertAlmostEqual(ralston.run(), expected_result)
 
+    def test_runge_kutta_fourth_2(self):
+        runge_kutta_fourth = differential_equations.RungeKuttaFourth(lambda x, y: 1+x**2+y**2, 1, 0, 0.1, 9)
+        runge_kutta_result = runge_kutta_fourth.run()
+        runge_kutta_result_simple = runge_kutta_fourth.simple_run()
+        self.assertAlmostEqual(runge_kutta_result, runge_kutta_result_simple)
+
+    def test_euler_method_2(self):
+        runge_kutta_fourth = differential_equations.EulerMethod(lambda x, y: 1+x**2+y**2, 1, 0, 0.1, 9)
+        runge_kutta_result = runge_kutta_fourth.run()
+        runge_kutta_result_simple = runge_kutta_fourth.simple_run()
+        self.assertAlmostEqual(runge_kutta_result, runge_kutta_result_simple)
+
 
 if __name__ == '__main__':
     unittest.main()
