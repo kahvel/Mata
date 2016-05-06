@@ -80,10 +80,28 @@ class Matrix(object):
         return Matrix(new_elements)
 
     def get_row(self, i):
-        return self.elements[i]
+        return self.elements[i][:]
 
     def get_col(self, j):
         return list(map(operator.itemgetter(j), self.elements))
+
+    def set_row(self, i, elements):
+        assert len(elements) == self.col_count
+        self.elements[i] = list(elements)
+
+    def set_col(self, i, elements):
+        assert len(elements) == self.row_count
+        for j in range(self.row_count):
+            self.elements[j][i] = elements[j]
+
+    def delete_row(self, i):
+        del self.elements[i]
+        self.row_count -= 1
+
+    def delete_col(self, i):
+        for j in range(self.row_count):
+            del self.elements[j][i]
+        self.col_count -= 1
 
     def __mul__(self, other):
         assert self.col_count == other.row_count
@@ -147,64 +165,80 @@ class Matrix(object):
     def is_symmetric(self):
         return self == self.transposed()
 
-    def row_echelon_form(self):
-        echelon_form = EchelonForm(self)
-        return echelon_form.row_echelon_form()
-
-
-class EchelonForm(object):
-    def __init__(self, matrix):
-        assert isinstance(matrix, Matrix)
-        self.matrix = matrix
-        self.rank = 0
-
-    def get_new_row(self, non_zero_index):
-        if non_zero_index == self.rank:
-            return self.matrix.get_row(self.rank)
+    def get_row_with_non_zero_element_row_op(self, start_row, col):
+        non_zero_element = self.get_first_non_zero_element_in_col(col, start_row)
+        if non_zero_element.index == start_row:
+            return self.get_row(start_row)
         else:
-            current_row = self.matrix.get_row(self.rank)
-            non_zero_row = self.matrix.get_row(non_zero_index)
+            current_row = self.get_row(start_row)
+            non_zero_row = self.get_row(non_zero_element.index)
             return map(operator.add, current_row, non_zero_row)
 
-    def get_non_zero_element(self, elements):
-        for i, element in enumerate(elements[self.rank:]):
+    def make_element_non_zero_using_row(self, row, col):
+        self.set_row(row, self.get_row_with_non_zero_element_row_op(row, col))
+
+    def get_first_non_zero_element_in_col(self, col, start_row=0):
+        for i, element in enumerate(self.get_col(col)[start_row:]):
             if element != 0:
-                return IndexElementPair(i+self.rank, element)
-        return IndexElementPair(None, None)
+                return IndexElementPair(i+start_row, element)
 
-    def get_initial_rows(self):
-        return [row for row in self.matrix.elements[:self.rank]]
+    def all_elements_zero_in_row(self, i, start_col=0):
+        return self.all_elements_zero(self.get_row(i)[start_col:])
 
-    def zero_rows(self, i, rows_to_zero, scaled_current_row):
+    def all_elements_zero_in_col(self, i, start_row=0):
+        return self.all_elements_zero(self.get_col(i)[start_row:])
+
+    def all_elements_zero(self, elements):
+        return all(map(lambda e: e == 0, elements))
+
+    def get_first_rows(self, number_of_rows):
+        return [row for row in self.elements[:number_of_rows]]
+
+    def get_zeroed_row_using_row(self, i, row_index, col_index, rows_to_zero):
+        if i in rows_to_zero:
+            row = self.get_row(i)
+            multiplier = row[col_index]
+            return list(map(lambda x, y: x-multiplier*y, row, self.get_row(row_index)))
+        else:
+            return self.get_row(i)
+
+    def get_zeroed_elements_using_row(self, row_index, col_index, rows_to_zero):
         new_rows = []
-        print
-        for j in rows_to_zero:
-            row = self.matrix.get_row(j)
-            multiplier = row[i]
-            new_rows.append(list(map(lambda x,y: x-multiplier*y, row, scaled_current_row)))
+        for i in range(self.row_count):
+            new_rows.append(self.get_zeroed_row_using_row(i, row_index, col_index, rows_to_zero))
         return new_rows
 
-    def scale_row(self, factor, row):
-        return map(lambda x: x/float(factor), row)
+    def make_elements_zero_using_row(self, row_index, col_index, rows_to_zero=None):
+        if rows_to_zero is None:
+            rows_to_zero = tuple(i for i in range(self.row_count) if i != row_index)
+        for i, new_row in enumerate(self.get_zeroed_elements_using_row(row_index, col_index, rows_to_zero)):
+            self.set_row(i, new_row)
 
-    def get_new_elements(self, non_zero_element, i):
-        scaled_current_row = self.scale_row(non_zero_element.element, self.get_new_row(non_zero_element.index))
-        new_elements = self.get_initial_rows()
-        new_elements.append(scaled_current_row)
-        new_elements.extend(self.zero_rows(i, range(self.rank+1, self.matrix.row_count), scaled_current_row))
-        return new_elements
+    def get_scaled_row(self, factor, row_index):
+        return map(lambda x: x/float(factor), self.get_row(row_index))
 
-    def update_rank_and_matrix(self, non_zero_element, i):
-        if not non_zero_element.is_none():
-            self.matrix = Matrix(self.get_new_elements(non_zero_element, i))
-            self.rank += 1
+    def scale_row(self, factor, row_index):
+        self.set_row(row_index, self.get_scaled_row(factor, row_index))
+
+    def col_to_row_echelon_form(self, col_index, row_index=0):
+        self.make_element_non_zero_using_row(row_index, col_index)
+        non_zero_element = self.get_first_non_zero_element_in_col(col_index, row_index)
+        self.scale_row(non_zero_element.element, row_index)
+        self.make_elements_zero_using_row(row_index, col_index, range(row_index+1, self.row_count))
+        return self
+
+    def row_echelon_form_step(self, matrix, col_index, start_row):
+        if not matrix.all_elements_zero_in_col(col_index, start_row):
+            return matrix.col_to_row_echelon_form(col_index, start_row), start_row+1
+        else:
+            return matrix, start_row
 
     def row_echelon_form(self):
-        self.rank = 0
-        for i in range(self.matrix.col_count):
-            non_zero_element = self.get_non_zero_element(self.matrix.get_col(i))
-            self.update_rank_and_matrix(non_zero_element, i)
-        return self.matrix
+        rank = 0
+        matrix = Matrix(self.elements)
+        for col_index in range(matrix.col_count):
+            matrix, rank = self.row_echelon_form_step(matrix, col_index, rank)
+        return matrix
 
 
 if __name__ == '__main__':
