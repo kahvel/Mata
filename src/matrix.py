@@ -67,7 +67,7 @@ class Matrix(object):
 
     def __rsub__(self, other):
         self.check_matrix_size(other)
-        return self.elementwise_binary_operator(operator.isub, self.elements, other.elements)
+        return self.elementwise_binary_operator(operator.sub, other.elements, self.elements)
 
     def __repr__(self):
         return "\n".join(map(str, self.elements))
