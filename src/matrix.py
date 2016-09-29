@@ -260,4 +260,11 @@ if __name__ == '__main__':
     print A.inverse()
     print
     print A.inverse()*A
+    D = Matrix([[1,2], [2,1]])
+    E = Matrix([[3,1], [2,1]])
+    print C.determinant()
+    print
+    print D.determinant()
+    print
+    print E.determinant()
 
